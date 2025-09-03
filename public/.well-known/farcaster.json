@@ -1,0 +1,30 @@
+{
+  "accountAssociation": {
+    "header": "",
+    "payload": "",
+    "signature": ""
+  },
+  "frame": {
+    "version": "1",
+    "name": "RemixRite",
+    "subtitle": "Built with Zara",
+    "description": "RemixRite is a Base Mini App built with Zara.",
+    "iconUrl": "https://0co.to/images/zara-2.png",
+    "homeUrl": "https://31be5fe1772b489788b71abca5cc52d7-ysmq-9urdsi5xn-vistara.vercel.app",
+    "splashImageUrl": "https://31be5fe1772b489788b71abca5cc52d7-ysmq-9urdsi5xn-vistara.vercel.app/splash.png",
+    "splashBackgroundColor": "#000000",
+    "heroImageUrl": "https://31be5fe1772b489788b71abca5cc52d7-ysmq-9urdsi5xn-vistara.vercel.app/image.png",
+    "tagline": "RemixRite",
+    "screenshotUrls": [
+      "https://31be5fe1772b489788b71abca5cc52d7-ysmq-9urdsi5xn-vistara.vercel.app/screenshot.png",
+      "https://31be5fe1772b489788b71abca5cc52d7-ysmq-9urdsi5xn-vistara.vercel.app/screenshot.png"
+    ],
+    "primaryCategory": "social",
+    "tags": [
+      "base",
+      "miniapp",
+      "onchainkit"
+    ],
+    "webhookUrl": "https://31be5fe1772b489788b71abca5cc52d7-ysmq-9urdsi5xn-vistara.vercel.app/api/webhook"
+  }
+}
