@@ -1,27 +1,60 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter, Grid, List } from 'lucide-react';
 import { Input } from './ui/Input';
 import { Button } from './ui/Button';
 import { ClipCard } from './ClipCard';
 
-const mockClips = [
-  { id: '1', title: 'Epic Cinematic Score', thumbnail: '', duration: '2:34', type: 'audio' as const, artist: 'AudioLibrary' },
-  { id: '2', title: 'City Lights Timelapse', thumbnail: '', duration: '1:45', type: 'video' as const, artist: 'VisualStock' },
-  { id: '3', title: 'Jazz Piano Loop', thumbnail: '', duration: '0:58', type: 'audio' as const, artist: 'MusicMakers' },
-  { id: '4', title: 'Nature Documentary Clip', thumbnail: '', duration: '3:12', type: 'video' as const, artist: 'NatureFilms' },
-  { id: '5', title: 'Electronic Beat', thumbnail: '', duration: '2:15', type: 'audio' as const, artist: 'BeatLab' },
-  { id: '6', title: 'Sunset Ocean Waves', thumbnail: '', duration: '4:30', type: 'video' as const, artist: 'OceanVibes' },
-];
+interface Clip {
+  id: string;
+  title: string;
+  thumbnail: string;
+  duration: string;
+  type: 'audio' | 'video';
+  artist?: string;
+  source_url: string;
+  metadata: any;
+}
 
 export function ContentLibrary() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedClips, setSelectedClips] = useState<string[]>([]);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filter, setFilter] = useState<'all' | 'audio' | 'video'>('all');
+  const [clips, setClips] = useState<Clip[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredClips = mockClips.filter(clip => {
+  useEffect(() => {
+    fetchClips();
+  }, []);
+
+  const fetchClips = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch('/api/upload');
+      if (response.ok) {
+        const result = await response.json();
+        const formattedClips = result.clips.map((clip: any) => ({
+          id: clip.id,
+          title: clip.title,
+          thumbnail: clip.metadata.thumbnail || '',
+          duration: clip.metadata.duration || '0:00',
+          type: clip.metadata.type,
+          artist: clip.metadata.artist || 'Unknown',
+          source_url: clip.source_url,
+          metadata: clip.metadata
+        }));
+        setClips(formattedClips);
+      }
+    } catch (error) {
+      console.error('Error fetching clips:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredClips = clips.filter(clip => {
     const matchesSearch = clip.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          clip.artist?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesFilter = filter === 'all' || clip.type === filter;
@@ -117,7 +150,14 @@ export function ContentLibrary() {
         ))}
       </div>
 
-      {filteredClips.length === 0 && (
+      {loading && (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+          <p className="text-white/60 mt-4">Loading clips...</p>
+        </div>
+      )}
+
+      {!loading && filteredClips.length === 0 && (
         <div className="text-center py-12">
           <p className="text-white/60">No clips found matching your search.</p>
         </div>
