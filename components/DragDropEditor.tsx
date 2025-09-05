@@ -18,24 +18,97 @@ export function DragDropEditor() {
   const [selectedClips, setSelectedClips] = useState<SelectedClip[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
+  const handleDrop = useCallback(async (e: React.DragEvent) => {
     e.preventDefault();
-    // Handle file drop logic here
+    const files = Array.from(e.dataTransfer.files);
+    
+    for (const file of files) {
+      await handleFileUpload(file);
+    }
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
   }, []);
 
+  const handleFileUpload = async (file: File) => {
+    try {
+      setIsProcessing(true);
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('title', file.name);
+      formData.append('ownerAddress', '0x1234567890123456789012345678901234567890'); // Mock address
+      
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const result = await response.json();
+      
+      // Add to selected clips
+      const newClip: SelectedClip = {
+        id: result.clip.id,
+        title: result.clip.title,
+        type: result.clip.metadata.type,
+        position: selectedClips.length
+      };
+      
+      setSelectedClips(prev => [...prev, newClip]);
+    } catch (error) {
+      console.error('File upload error:', error);
+      // Could show toast notification here
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const removeClip = (clipId: string) => {
     setSelectedClips(clips => clips.filter(clip => clip.id !== clipId));
   };
 
   const processRemix = async () => {
+    if (selectedClips.length === 0) return;
+    
     setIsProcessing(true);
-    // Simulate processing
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    setIsProcessing(false);
+    try {
+      const response = await fetch('/api/remix', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          clipIds: selectedClips.map(clip => clip.id),
+          creatorId: '0x1234567890123456789012345678901234567890', // Mock creator ID
+          title: `Remix of ${selectedClips[0].title}`,
+          description: `A remix created from ${selectedClips.length} clips`,
+          style: 'creative',
+          mood: 'energetic'
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Remix creation failed');
+      }
+      
+      const result = await response.json();
+      console.log('Remix created:', result.remix);
+      
+      // Could show success message or redirect to remix view
+      // For now, clear the selected clips
+      setSelectedClips([]);
+      
+    } catch (error) {
+      console.error('Remix processing error:', error);
+      // Could show error toast
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
